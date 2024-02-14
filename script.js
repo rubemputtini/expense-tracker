@@ -8,91 +8,80 @@ const subcategories = {
     "Despesas Temporárias/Variáveis": ["Eletrodomésticos/Eletrônicos", "Presentes", "Manutenção e reparos"]
 };
 
+const CATEGORY_DROPDOWN = document.getElementById("expense-category");
+const SUBCATEGORIES_DROPDOWN = document.getElementById("expense-subcategory");
+const EXPENSE_AMOUNT = document.getElementById("expense-amount");
+const EXPENSE_DATE = document.getElementById("expense-date");
+const REGISTER_BTN = document.getElementById("register-btn");
+const EXPENSES_BODY = document.getElementById("expenses-body");
+const TOTAL_AMOUNT_CELL = document.getElementById("total-amount");
+const ERROR_MESSAGE = document.getElementById("error-message");
+
 let expenses = [];
 let totalAmount = 0;
 
-const categoryDropdown = document.getElementById("expense-category");
-const subcategoriesDropdown = document.getElementById("expense-subcategory");
-const expenseAmount = document.getElementById("expense-amount");
-const expenseDate = document.getElementById("expense-date");
-const registerBtn = document.getElementById("register-btn");
-const expensesBody = document.getElementById("expenses-body");
-const totalAmountCell = document.getElementById("total-amount");
+window.onload = function() {
+    showSubcategories();
+};
+
+CATEGORY_DROPDOWN.addEventListener('change', showSubcategories);
+
+REGISTER_BTN.addEventListener('click', registerExpense);
 
 function showSubcategories() {
-    subcategoriesDropdown.innerHTML = "";
-    const category = categoryDropdown.value;
+    SUBCATEGORIES_DROPDOWN.innerHTML = "";
+    const category = CATEGORY_DROPDOWN.value;
     subcategories[category].forEach(subcategory => {
       const option = document.createElement("option");
       option.text = subcategory;
-      subcategoriesDropdown.add(option);
+      SUBCATEGORIES_DROPDOWN.add(option);
     });
-  }
+}
 
-window.onload = function() {
-    showSubcategories();
-  };
-
-registerBtn.addEventListener('click', function(event) {
+function registerExpense(event) {
     event.preventDefault();
 
     if (!validateExpenseForm()) {
         return;
     };
     
-    const category = categoryDropdown.value;
-    const subcategory = subcategoriesDropdown.value;
-    const amount = Number(expenseAmount.value);
-    const date = expenseDate.value;
-
+    const category = CATEGORY_DROPDOWN.value;
+    const subcategory = SUBCATEGORIES_DROPDOWN.value;
+    const amount = Number(EXPENSE_AMOUNT.value);
+    const date = EXPENSE_DATE.value;
 
     const expense = { category, subcategory, amount, date };
     expenses.push(expense);
 
     totalAmount += amount;
-    totalAmountCell.textContent = formatCurrency(totalAmount);
+    TOTAL_AMOUNT_CELL.textContent = formatCurrency(totalAmount);
 
-    const newRow = expensesBody.insertRow();
-    const cells = [category, subcategory, formatCurrency(amount), date];
-    cells.forEach((value, index) => {
-        const cell = newRow.insertCell();
-        cell.textContent = value;
-    });
-
-    const actionCell = newRow.insertCell();
-    const editIcon = document.createElement("i");
-    editIcon.classList.add('fas', 'fa-edit', 'edit-btn');
-    editIcon.addEventListener('click', function() {
-        editExpense(expense, newRow);
-    });
-    
-    const deleteIcon = document.createElement("i");
-    deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-btn');
-    deleteIcon.addEventListener('click', function() {
-        deleteExpense(expense, newRow);
-    });
-    actionCell.appendChild(editIcon);
-    actionCell.appendChild(deleteIcon);
+    addExpenseRow(expense);
 
     document.getElementById("expense-form").reset();
-});
+}
 
 function validateExpenseForm() {
-    const category = document.getElementById("expense-category").value;
-    const subcategory = document.getElementById("expense-subcategory").value;
-    const amount = Number(document.getElementById("expense-amount").value);
-    const date = document.getElementById("expense-date").value;
+    const category = CATEGORY_DROPDOWN.value;
+    const subcategory = SUBCATEGORIES_DROPDOWN.value;
+    const amount = Number(EXPENSE_AMOUNT.value);
+    const date = EXPENSE_DATE.value;
 
-    const errorElement = document.getElementById("error-message");
-    errorElement.textContent = "";
+    ERROR_MESSAGE.textContent = "";
 
     if (!category || !subcategory || !amount || !date) {
-        errorElement.textContent = "Por favor, preencha todos os campos.";
+        ERROR_MESSAGE.textContent = "Por favor, preencha todos os campos.";
         return false;
     }
 
-    if (isNaN(amount)) {
-        errorElement.textContent = "O valor deve ser um número válido.";
+    if (isNaN(amount) || amount <= 0) {
+        ERROR_MESSAGE.textContent = "O valor deve ser um número válido e maior que zero.";
+        return false;
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!date.match(dateRegex) || isNaN(new Date(date))) {
+        ERROR_MESSAGE.textContent = "A data deve ser uma data válida.";
         return false;
     }
 
@@ -103,20 +92,49 @@ function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
+function formatDate(date) {
+    // Converter a data de AAAA-MM-DD para DD/MM/AAAA
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+}
+
+function addExpenseRow(expense) {
+    const newRow = EXPENSES_BODY.insertRow();
+    const cells = [expense.category, expense.subcategory, formatCurrency(expense.amount), formatDate(expense.date)];
+    cells.forEach((value, index) => {
+        const cell = newRow.insertCell();
+        cell.textContent = value;
+    });
+
+    const actionCell = newRow.insertCell();
+    const editIcon = createIcon('fas fa-edit edit-btn', () => editExpense(expense, newRow));
+    const deleteIcon = createIcon('fas fa-trash-alt delete-btn', () => deleteExpense(expense, newRow));
+    
+    actionCell.appendChild(editIcon);
+    actionCell.appendChild(deleteIcon);
+}
+
+function createIcon(classes, clickHandler) {
+    const icon = document.createElement("i");
+    icon.classList.add(...classes.split(' '));
+    icon.addEventListener('click', clickHandler);
+    return icon;
+}
+
 function deleteExpense(expense, row) {
     totalAmount -= expense.amount;
-    totalAmountCell.textContent = formatCurrency(totalAmount);
+    TOTAL_AMOUNT_CELL.textContent = formatCurrency(totalAmount);
     
     expenses.splice(expenses.indexOf(expense), 1);
     row.remove();
 }
 
 function editExpense(expense, row) {
-    categoryDropdown.value = expense.category;
+    CATEGORY_DROPDOWN.value = expense.category;
     showSubcategories();
-    subcategoriesDropdown.value = expense.subcategory;
-    expenseAmount.value = expense.amount;
-    expenseDate.value = expense.date;
+    SUBCATEGORIES_DROPDOWN.value = expense.subcategory;
+    EXPENSE_AMOUNT.value = expense.amount;
+    EXPENSE_DATE.value = expense.date;
 
     const index = expenses.indexOf(expense);
     if (index !== -1) {
@@ -124,7 +142,7 @@ function editExpense(expense, row) {
     }
 
     totalAmount -= expense.amount;
-    totalAmountCell.textContent = formatCurrency(totalAmount);
+    TOTAL_AMOUNT_CELL.textContent = formatCurrency(totalAmount);
 
     row.remove();
 }
