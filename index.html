@@ -7,25 +7,26 @@
     <title>Planilha Financeira de Acompanhamento</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 
 <body>
     <nav></nav>
     <header>
-        <h1>Planilha de Acompanhamento Diario</h1>
+        <h1>Planilha de Acompanhamento Diário</h1>
     </header>
     <main>
         <section id="expense-register">
             <h2>Registrar Gasto</h2>
             <form id="expense-form" onsubmit="return validateExpenseForm()">
                 <select id="expense-category" required onchange="showSubcategories()">
-                    <option value="housing" selected>Habitação</option>
-                    <option value="health">Saúde</option>
-                    <option value="transport">Transporte</option>
-                    <option value="personal">Despesas Pessoais</option>
-                    <option value="education">Educação</option>
-                    <option value="leisure">Lazer</option>
-                    <option value="temporary">Despesas Temporárias/Variáveis</option>
+                    <option value="Habitação" selected>Habitação</option>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Despesas Pessoais">Despesas Pessoais</option>
+                    <option value="Educação">Educação</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Despesas Temporárias/Variáveis">Despesas Temporárias/Variáveis</option>
                 </select>
                 <select id="expense-subcategory" required>
 
@@ -37,6 +38,7 @@
                 <label for="expense-date">Data:</label>
                 <input type="date" id="expense-date" required>
 
+                <p id="error-message"></p>
                 <button id="register-btn">Registrar</button>
             </form>
         </section>
@@ -49,6 +51,7 @@
                         <th>Subcategoria</th>
                         <th>Valor</th>
                         <th>Data</th>
+                        <th>Ação</th>
                     </tr>
                 </thead>
                 <tbody id="expenses-body">
@@ -57,6 +60,7 @@
                 <tfoot>
                     <tr>
                         <td>Total:</td>
+                        <td></td>
                         <td id="total-amount"></td>
                         <td></td>
                         <td></td>

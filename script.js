@@ -1,11 +1,11 @@
 const subcategories = {
-    "housing": ["Aluguel/Prestação", "Condomínio", "IPTU + Taxas Municipais", "Conta de energia", "Conta de água", "Telefones celulares", "TV e Internet", "Supermercado", "Empregados", "Lavanderia", "Outros"],
-    "health": ["Plano de Saúde", "Médicos e terapeutas", "Medicamentos", "Outros"],
-    "transport": ["Prestação", "Seguro", "Combustível", "Estacionamentos", "Lavagens", "Mecânico", "Multas", "Transporte Público", "Táxi/Uber", "Outros"],
-    "personal": ["Cabeleireiro", "Vestuário", "Academia", "Outros"],
-    "education": ["Cursos", "Livros", "Outros"],
-    "leisure": ["Restaurantes", "Bares e boates", "Games", "Passagens", "Hospedagens", "Passeios", "Outros"],
-    "temporary": ["Eletrodomésticos/Eletrônicos", "Presentes", "Manutenção e reparos"]
+    "Habitação": ["Aluguel/Prestação", "Condomínio", "IPTU + Taxas Municipais", "Conta de energia", "Conta de água", "Telefones celulares", "TV e Internet", "Supermercado", "Empregados", "Lavanderia", "Outros"],
+    "Saúde": ["Plano de Saúde", "Médicos e terapeutas", "Medicamentos", "Outros"],
+    "Transporte": ["Prestação", "Seguro", "Combustível", "Estacionamentos", "Lavagens", "Mecânico", "Multas", "Transporte Público", "Táxi/Uber", "Outros"],
+    "Despesas Pessoais": ["Cabeleireiro", "Vestuário", "Academia", "Outros"],
+    "Educação": ["Cursos", "Livros", "Outros"],
+    "Lazer": ["Restaurantes", "Bares e boates", "Games", "Passagens", "Hospedagens", "Passeios", "Outros"],
+    "Despesas Temporárias/Variáveis": ["Eletrodomésticos/Eletrônicos", "Presentes", "Manutenção e reparos"]
 };
 
 let expenses = [];
@@ -50,34 +50,29 @@ registerBtn.addEventListener('click', function(event) {
     expenses.push(expense);
 
     totalAmount += amount;
-    totalAmountCell.textContent = totalAmount;
+    totalAmountCell.textContent = formatCurrency(totalAmount);
 
     const newRow = expensesBody.insertRow();
+    const cells = [category, subcategory, formatCurrency(amount), date];
+    cells.forEach((value, index) => {
+        const cell = newRow.insertCell();
+        cell.textContent = value;
+    });
 
-    const categoryCell = newRow.insertCell();
-    const subCategoryCell = newRow.insertCell();
-    const amountCell = newRow.insertCell();
-    const dateCell = newRow.insertCell();
-    const deleteCell = newRow.insertCell();
-
-    const deleteBtn = document.createElement("button");
-
-    deleteBtn.textContent = 'Apagar';
-    deleteBtn.classList.add('delete-btn');
-
-    deleteBtn.addEventListener('click', function() {
-        totalAmount -= expense.amount;
-        totalAmountCell.textContent = totalAmount;
-        
-        expenses.splice(expenses.indexOf(expense), 1);
-        expensesBody.removeChild(newRow);
-    })
-
-    categoryCell.textContent = expense.category;
-    subCategoryCell.textContent = expense.subcategory;
-    amountCell.textContent = expense.amount;
-    dateCell.textContent = expense.date;
-    deleteCell.appendChild(deleteBtn);
+    const actionCell = newRow.insertCell();
+    const editIcon = document.createElement("i");
+    editIcon.classList.add('fas', 'fa-edit', 'edit-btn');
+    editIcon.addEventListener('click', function() {
+        editExpense(expense, newRow);
+    });
+    
+    const deleteIcon = document.createElement("i");
+    deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-btn');
+    deleteIcon.addEventListener('click', function() {
+        deleteExpense(expense, newRow);
+    });
+    actionCell.appendChild(editIcon);
+    actionCell.appendChild(deleteIcon);
 
     document.getElementById("expense-form").reset();
 });
@@ -85,20 +80,51 @@ registerBtn.addEventListener('click', function(event) {
 function validateExpenseForm() {
     const category = document.getElementById("expense-category").value;
     const subcategory = document.getElementById("expense-subcategory").value;
-    const amount = document.getElementById("expense-amount").value;
+    const amount = Number(document.getElementById("expense-amount").value);
     const date = document.getElementById("expense-date").value;
 
+    const errorElement = document.getElementById("error-message");
+    errorElement.textContent = "";
+
     if (!category || !subcategory || !amount || !date) {
-        alert("Por favor, preencha todos os campos.");
+        errorElement.textContent = "Por favor, preencha todos os campos.";
         return false;
     }
 
     if (isNaN(amount)) {
-        alert("O valor deve ser um número válido.");
+        errorElement.textContent = "O valor deve ser um número válido.";
         return false;
     }
 
-    document.getElementById("expense-form").reset();
-
     return true;
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+}
+
+function deleteExpense(expense, row) {
+    totalAmount -= expense.amount;
+    totalAmountCell.textContent = formatCurrency(totalAmount);
+    
+    expenses.splice(expenses.indexOf(expense), 1);
+    row.remove();
+}
+
+function editExpense(expense, row) {
+    categoryDropdown.value = expense.category;
+    showSubcategories();
+    subcategoriesDropdown.value = expense.subcategory;
+    expenseAmount.value = expense.amount;
+    expenseDate.value = expense.date;
+
+    const index = expenses.indexOf(expense);
+    if (index !== -1) {
+        expenses.splice(index, 1);
+    }
+
+    totalAmount -= expense.amount;
+    totalAmountCell.textContent = formatCurrency(totalAmount);
+
+    row.remove();
 }
