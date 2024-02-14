@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilha Financeira de Acompanhamento</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav></nav>
+    <header>
+        <h1>Planilha de Acompanhamento Diario</h1>
+    </header>
+    <main>
+        <section id="expense-register">
+            <h2>Registrar Gasto</h2>
+            <form id="expense-form" onsubmit="return validateExpenseForm()">
+                <select id="expense-category" required onchange="showSubcategories()">
+                    <option value="housing" selected>Habitação</option>
+                    <option value="health">Saúde</option>
+                    <option value="transport">Transporte</option>
+                    <option value="personal">Despesas Pessoais</option>
+                    <option value="education">Educação</option>
+                    <option value="leisure">Lazer</option>
+                    <option value="temporary">Despesas Temporárias/Variáveis</option>
+                </select>
+                <select id="expense-subcategory" required>
+
+                </select>
+
+                <label for="expense-amount">Valor:</label>
+                <input type="number" id="expense-amount" required>
+
+                <label for="expense-date">Data:</label>
+                <input type="date" id="expense-date" required>
+
+                <button id="register-btn">Registrar</button>
+            </form>
+        </section>
+        <section id="expenses-list">
+            <h2>Últimos Gastos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Subcategoria</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="expenses-body">
+
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>Total:</td>
+                        <td id="total-amount"></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
+        <section id="monthly-sheet">
+            <h2>Planilha Mensal</h2>
+            <div id="calendar"></div>
+        </section>
+    </main>
+    <footer></footer>
+    <script src="script.js"></script>
+</body>
+
+</html>
