@@ -24,6 +24,11 @@ window.onload = function() {
     showSubcategories();
 };
 
+document.addEventListener('DOMContentLoaded', function () {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("expense-date").value = today;
+});
+
 CATEGORY_DROPDOWN.addEventListener('change', showSubcategories);
 
 REGISTER_BTN.addEventListener('click', registerExpense);
@@ -59,6 +64,9 @@ function registerExpense(event) {
     addExpenseRow(expense);
 
     document.getElementById("expense-form").reset();
+
+    calendar.addEvent(convertExpenseToEvent(expense));
+    calendar.render();
 }
 
 function validateExpenseForm() {
@@ -146,3 +154,64 @@ function editExpense(expense, row) {
 
     row.remove();
 }
+
+var calendar;
+
+document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+
+    var categoryColors = {
+        "Saúde": 'lightblue',
+        "Transporte": 'lightgreen',
+        "Habitação": 'lightcoral',
+        "Despesas Pessoais": 'lightsalmon',
+        "Educação": 'lightseagreen',
+        "Lazer": 'lightpink',
+        "Despesas Temporárias/Variáveis": 'lightsteelblue'
+    };
+
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: window.innerWidth < 768 ? 'dayGridDay' : 'dayGridWeek', // Altera a visualização padrão com base no tamanho da tela
+        events: [],
+        eventDidMount: function(info) {
+            console.log("Evento montado:", info);
+
+            var category = info.event.extendedProps.category;
+            var color = categoryColors[category];
+            
+            if (color) {
+                info.el.style.backgroundColor = color;
+            }
+
+            var description = info.event.extendedProps.description;
+            if (description) {
+                var descriptionEl = document.createElement('div');
+                descriptionEl.textContent = description;
+                info.el.appendChild(descriptionEl);
+            }
+        }
+    });
+
+    calendar.render();
+});
+
+function convertExpenseToEvent(expense) {
+    return {
+        title: expense.subcategory,
+        description: formatCurrency(expense.amount),
+        start: expense.date,
+        allDay: true,
+        extendedProps: {
+            category: expense.category,
+            amount: expense.amount
+        }
+    };
+}
+
+window.addEventListener('resize', function() {
+    if (window.innerWidth < 768) {
+        calendar.changeView('dayGridDay');
+    } else {
+        calendar.changeView('dayGridWeek');
+    }
+});
